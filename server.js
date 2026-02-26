@@ -1,30 +1,37 @@
-const express = require("express");
+// server.js
+import express from "express";
+
 const app = express();
+const port = process.env.PORT || 3000;
 
-// ✅ Callback URL for eBay OAuth
-app.get("/callback", (req, res) => {
-  const code = req.query.code;
-  if (!code) {
-    return res.send("No authorization code received.");
-  }
-  res.send(`Authorization code: ${code}<br>
-            You can now exchange this code for an access token.`);
+// ===== eBay login route =====
+app.get("/ebay-login", (req, res) => {
+  const runame = "TadhgOMe-sandbox-PRD-a8be4e200-823ae751"; // your sandbox RuName
+  const redirectUrl = "https://ebay-oauth-0dh9.onrender.com/ebay-success"; // success endpoint
+  const ebayUrl = `https://signin.ebay.com/ws/eBayISAPI.dll?SignIn&runame=${runame}&ru=${encodeURIComponent(redirectUrl)}`;
+  res.redirect(ebayUrl);
 });
 
-// ✅ Privacy Policy page
+// ===== Success route =====
+app.get("/ebay-success", (req, res) => {
+  res.send("🎉 eBay login successful! You can now access your account.");
+});
+
+// ===== Failure route =====
+app.get("/ebay-failure", (req, res) => {
+  res.send("❌ eBay login failed or was declined. Please try again.");
+});
+
+// ===== Privacy policy route =====
 app.get("/privacy", (req, res) => {
-  res.send("This app uses your eBay account only to fetch data via API. We do not store passwords.");
+  res.send(`
+    🛡️ Privacy Policy:<br>
+    We respect your users' data. Your login information is only used to authenticate with eBay
+    and is not shared with any third party.
+  `);
 });
 
-// ✅ Declined OAuth page
-app.get("/declined", (req, res) => {
-  res.send("You declined OAuth access. You can retry via the app.");
+// ===== Start the server =====
+app.listen(port, () => {
+  console.log(`Server running at https://ebay-oauth-0dh9.onrender.com`);
 });
-
-// Optional: homepage for testing
-app.get("/", (req, res) => {
-  res.send("Server is running. Use /callback for OAuth.");
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("Server started on port " + PORT));
